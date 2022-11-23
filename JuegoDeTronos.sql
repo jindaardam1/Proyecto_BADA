@@ -107,3 +107,33 @@ INSERT INTO `juegodetronosbd`.`temporada` (`codigo`, `numero`, `descripcion`) VA
 INSERT INTO `juegodetronosbd`.`titulo` (`codigo`, `nombre`, `descripcion`) VALUES ('1', 'Señores Dragón', 'Los señores dragón[1] fueron los nobles más poderosos del Feudo Franco de Valyria que eran capaces de controlar y montar a los dragones.');
 INSERT INTO `juegodetronosbd`.`titulo` (`codigo`, `nombre`, `descripcion`) VALUES ('2', 'Príncipe de Refugio Estival', 'Príncipe de Refugio Estival fue un título usado por los hijos menores de un monarca durante la dinastía Targaryen.');
 
+
+SELECT nombre, tamaño from dragon order by tamaño desc, longitud asc;
+
+SELECT count(codigo) FROM personaje group by left(nombre,1) order by  count(codigo);
+
+SELECT count(sexo), avg(timestampdiff(year, fechaNacimiento, curdate())) as "edad" from personaje where fechaMuerte is not null group by sexo;
+
+SELECT ifnull (concat("EL personaje ", nombre, " ", apellido , " murio a los ",timestampdiff(year, fechaNacimiento, fechaMuerte)), concat("EL personaje ", nombre, " ", apellido , " esta vivo ") )  FROM personaje WHERE sexo = "H";
+
+SELECT concat("Año: ",year(fechaMuerte), " - Nº de muertes: ",count(*)) FROM personaje group by year(fechaMuerte) having count(*)>1;
+
+drop function if exists calcularPersonajesEdad;
+delimites &&;
+create function if not exists calcularPersonajesEdad(limitInf integer, limitSup integer) /*luego sigo que no me acuerdo de estas*/
+
+drop procedure if exists mayorEdad;
+delimiter && ;
+create procedure calculadorDeEdad()
+begin
+declare maximoEdad varchar(30);
+declare minimoEdad varchar(30);
+declare edad int;
+set edad = ifnull (timestampdiff(year, fechaNacimiento, now()),timestampdiff(year, fechaNacimiento, fechaMuerte))
+insert into maximoEdad select nombre from persona order by edad desc limit 1 ;
+insert into minimoEdad select nombre from persona order by ifnull edad limit 1 ;
+return concat("El personaje de mayor edad es ",maximoEdad ," con ", , " años y el mas joven es ",minimoEdad , " con " , , "años.";
+end
+&&
+delimiter;
+call calculadorDeEdad()
