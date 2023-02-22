@@ -60,3 +60,37 @@ CREATE TABLE temporada (
     numero INT NOT NULL UNIQUE,
     descripcion VARCHAR(100) NOT NULL UNIQUE
 );
+
+create table personajeTieneArma (
+Codigo_Arma int,
+Codigo_Personaje int,
+primary key (Codigo_Arma,Codigo_Personaje),
+foreign key (Codigo_Arma) references arma(Codigo),
+foreign key (Codigo_Personaje) references personaje(Codigo)
+);
+
+create table personajeTienePoderes (
+Codigo_Poderes int,
+Codigo_Personaje int,
+primary key (Codigo_Poderes,Codigo_Personaje),
+foreign key (Codigo_Poderes) references poderes(Codigo),
+foreign key (Codigo_Personaje) references personaje(Codigo)
+);
+
+create table participan (
+Código_Sucesos INT ,
+Código_Personaje INT ,
+primary key (Código_Sucesos,Código_Personaje),
+foreign key (Código_Sucesos) references sucesos(Codigo),
+foreign key (Codigo_Personaje) references personaje(Codigo)
+);
+
+create table aparece (
+num_Capitulo INT,
+Codigo_Temporada INT,
+Código_Personaje INT,
+primary key (num_Capitulo,Codigo_Temporada,Código_Personaje),
+foreign key (num_Capitulo, Codigo_Temporada) references capitulo(Numero, codigo_Temporada),
+foreign key (Código_Personaje) references personaje(Codigo)
+);
+
