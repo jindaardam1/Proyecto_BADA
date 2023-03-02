@@ -102,14 +102,6 @@ CREATE TABLE poderes (
     nombre VARCHAR(30) NOT NULL
 );
 
-DROP TABLE IF EXISTS sucesos;
-CREATE TABLE sucesos (
-    codigo INT PRIMARY KEY AUTO_INCREMENT,
-    nombre VARCHAR(30) NOT NULL,
-    codigo_lugaresemblematicos INT NOT NULL,
-    FOREIGN KEY (codigo_lugaresemblematicos) REFERENCES lugaresemblematicos(codigo)
-);
-
 DROP TABLE IF EXISTS lugaresemblematicos;
 CREATE TABLE lugaresemblematicos (
     codigo INT PRIMARY KEY AUTO_INCREMENT,
@@ -119,6 +111,14 @@ CREATE TABLE lugaresemblematicos (
     codigo_casa INT NOT NULL,
     FOREIGN KEY (codigo_municipio) REFERENCES municipio(codigo),
     FOREIGN KEY (codigo_casa) REFERENCES casa(codigo)
+);
+
+DROP TABLE IF EXISTS sucesos;
+CREATE TABLE sucesos (
+    codigo INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(30) NOT NULL,
+    codigo_lugaresemblematicos INT NOT NULL,
+    FOREIGN KEY (codigo_lugaresemblematicos) REFERENCES lugaresemblematicos(codigo)
 );
 
 DROP TABLE IF EXISTS personajetienearma;
@@ -154,6 +154,6 @@ CREATE TABLE aparece (
     codigo_temporada INT,
     codigo_personaje INT,
     PRIMARY KEY (num_capitulo, codigo_temporada, codigo_personaje),
-    FOREIGN KEY (num_capitulo, codigo_temporada) REFERENCES capitulo(numero, codigo_temporada),
+    FOREIGN KEY (num_capitulo, codigo_temporada) REFERENCES capitulo(codigo, codigo_temporada),
     FOREIGN KEY (codigo_personaje) REFERENCES personaje(codigo)
 );
