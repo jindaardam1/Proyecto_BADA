@@ -288,3 +288,11 @@ JOIN minuto m ON a.num_capitulo = m.num_capitulo AND a.codigo_temporada = m.codi
 WHERE p.fechaMuerte IS NOT NULL
 GROUP BY p.codigo
 ORDER BY apariciones_totales DESC;
+
+
+SELECT UPPER(p.nombre) AS 'Personaje', COUNT(pa.codigo_arma) AS 'Nº Armas'
+FROM personaje p
+JOIN personajetienearma pa ON p.codigo = pa.codigo_personaje
+WHERE p.fechaMuerte IS NOT NULL AND TIMESTAMPDIFF(YEAR, p.fechaNacimiento, p.fechaMuerte) > 30
+GROUP BY p.codigo
+HAVING COUNT(pa.codigo_arma) > 1;
