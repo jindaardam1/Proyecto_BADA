@@ -120,7 +120,9 @@ CREATE TABLE sucesos (
     codigo INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL,
     codigo_lugaresemblematicos INT NOT NULL,
-    FOREIGN KEY (codigo_lugaresemblematicos) REFERENCES lugaresemblematicos(codigo)
+    codigo_personaje INT,
+    FOREIGN KEY (codigo_lugaresemblematicos) REFERENCES lugaresemblematicos(codigo),
+    FOREIGN KEY (codigo_personaje) REFERENCES personaje(codigo)
 );
 
 DROP TABLE IF EXISTS personajetienearma;
@@ -302,16 +304,16 @@ INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_c
 INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Torre de la Luna', 'Torre situada en la localidad de Asparrena, conocida por su forma de media luna', 28, 9);
 INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Cascada del Dragón', 'Cascada situada en el municipio de Ayala/Aiara, donde se dice que aparece un dragón cada luna llena', 30, 10);
 /*sucesos*/ 
-INSERT INTO sucesos (nombre, codigo_lugaresemblematicos) VALUES ('Boda Roja', 1);
-INSERT INTO sucesos (nombre, codigo_lugaresemblematicos) VALUES ('Muerte de Joffrey Baratheon', 2);
-INSERT INTO sucesos (nombre, codigo_lugaresemblematicos) VALUES ('Victoria en la Batalla de los Bastardos', 3);
-INSERT INTO sucesos (nombre, codigo_lugaresemblematicos) VALUES ('Coronación de Cersei Lannister', 2);
-INSERT INTO sucesos (nombre, codigo_lugaresemblematicos) VALUES ('Incendio de la Flota de Stannis Baratheon', 4);
-INSERT INTO sucesos (nombre, codigo_lugaresemblematicos) VALUES ('Ataque de los Hijos del Hierro a Dorne', 5);
-INSERT INTO sucesos (nombre, codigo_lugaresemblematicos) VALUES ('Creación del Rey de la Noche', 6);
-INSERT INTO sucesos (nombre, codigo_lugaresemblematicos) VALUES ('Saqueo de Desembarco del Rey por Daenerys Targaryen', 7);
-INSERT INTO sucesos (nombre, codigo_lugaresemblematicos) VALUES ('Toma de Harrenhal por la Hermandad sin Estandartes', 8);
-INSERT INTO sucesos (nombre, codigo_lugaresemblematicos) VALUES ('Muerte de Khal Drogo', 9);
+INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Boda Roja', 1, 3);
+INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Muerte de Joffrey Baratheon', 2, 5);
+INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Victoria en la Batalla de los Bastardos', 3, 2);
+INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Coronación de Cersei Lannister', 2, 6);
+INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Incendio de la Flota de Stannis Baratheon', 4, 2);
+INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Ataque de los Hijos del Hierro a Dorne', 5, 3);
+INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Creación del Rey de la Noche', 6, 1);
+INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Saqueo de Desembarco del Rey por Daenerys Targaryen', 7, 10);
+INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Toma de Harrenhal por la Hermandad sin Estandartes', 8, 7);
+INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Muerte de Khal Drogo', 9, 10);
 
 /*personajestienepoderes*/ 
 INSERT INTO personajetienepoderes (codigo_poderes, codigo_personaje) VALUES (1, 1);
@@ -409,3 +411,33 @@ JOIN personajetienearma pa ON p.codigo = pa.codigo_personaje
 WHERE p.fechaMuerte IS NOT NULL AND TIMESTAMPDIFF(YEAR, p.fechaNacimiento, p.fechaMuerte) > 30
 GROUP BY p.codigo
 HAVING COUNT(pa.codigo_arma) > 1;
+
+DELIMITER $$
+DROP FUNCTION IF EXISTS fn_insertaSuceso $$
+CREATE FUNCTION fn_insertaSuceso (codLugarEmblematico INT, codPersonaje INT, nombreSuceso VARCHAR(50)) 
+RETURNS INT
+READS SQL DATA
+BEGIN
+     /*La condición del enunciado "Código del suceso: el máximo existente más 1." ya la cumple 
+     nuestra tabla al ser AUTO_INCREMENT*/
+     IF NOT EXISTS (SELECT * FROM lugaresemblematicos WHERE codigo = codLugarEmblematico) THEN
+        RETURN -3;
+     ELSEIF NOT EXISTS (SELECT * FROM personaje WHERE codigo = codPersonaje) THEN
+        RETURN -2;
+     ELSEIF CHAR_LENGTH(nombreSuceso) < 3 THEN
+        RETURN -1;
+     ELSE
+        INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES (nombreSuceso, codLugarEmblematico, codPersonaje);
+        RETURN 0;
+     END IF;
+END $$
+DELIMITER ;
+
+SELECT fn_insertaSuceso (23748, 1, 'Muerte de dragón');
+SELECT fn_insertaSuceso (1, 23748, 'Muerte de dragón');
+SELECT fn_insertaSuceso (1, 1, 'M');
+SELECT * FROM sucesos JOIN lugaresemblematicos ON lugaresemblematicos.codigo = sucesos.codigo_lugaresemblematicos
+JOIN personaje ON personaje.codigo = sucesos.codigo_personaje;
+SELECT fn_insertaSuceso (1, 1, 'Muerte de dragón');
+SELECT * FROM sucesos JOIN lugaresemblematicos ON lugaresemblematicos.codigo = sucesos.codigo_lugaresemblematicos
+JOIN personaje ON personaje.codigo = sucesos.codigo_personaje;
