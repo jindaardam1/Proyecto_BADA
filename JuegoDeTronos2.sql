@@ -424,6 +424,7 @@ WHERE p.fechaMuerte IS NOT NULL AND TIMESTAMPDIFF(YEAR, p.fechaNacimiento, p.fec
 GROUP BY p.codigo
 HAVING COUNT(pa.codigo_arma) > 1;
 
+/*Función 1*/
 DELIMITER $$
 DROP FUNCTION IF EXISTS fn_numPersonajesArma;
 CREATE FUNCTION fn_numPersonajesArma(codArma INT)
@@ -442,6 +443,7 @@ DELIMITER ;
 SELECT fn_numPersonajesArma(4);
 SELECT fn_numPersonajesarma(14);
 
+/*Función 2*/
 DELIMITER $$
 DROP FUNCTION IF EXISTS fn_insertaSuceso $$
 CREATE FUNCTION fn_insertaSuceso (codLugarEmblematico INT, codPersonaje INT, nombreSuceso VARCHAR(50)) 
