@@ -315,6 +315,18 @@ INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUE
 INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Toma de Harrenhal por la Hermandad sin Estandartes', 8, 7);
 INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Muerte de Khal Drogo', 9, 10);
 
+/*personajetienepoderes*/
+INSERT INTO personajetienearma (codigo_arma, codigo_personaje) VALUES (1, 4);
+INSERT INTO personajetienearma (codigo_arma, codigo_personaje) VALUES (2, 6);
+INSERT INTO personajetienearma (codigo_arma, codigo_personaje) VALUES (3, 2);
+INSERT INTO personajetienearma (codigo_arma, codigo_personaje) VALUES (4, 1);
+INSERT INTO personajetienearma (codigo_arma, codigo_personaje) VALUES (5, 7);
+INSERT INTO personajetienearma (codigo_arma, codigo_personaje) VALUES (6, 5);
+INSERT INTO personajetienearma (codigo_arma, codigo_personaje) VALUES (7, 9);
+INSERT INTO personajetienearma (codigo_arma, codigo_personaje) VALUES (4, 3);
+INSERT INTO personajetienearma (codigo_arma, codigo_personaje) VALUES (9, 8);
+INSERT INTO personajetienearma (codigo_arma, codigo_personaje) VALUES (10, 2);
+
 /*personajestienepoderes*/ 
 INSERT INTO personajetienepoderes (codigo_poderes, codigo_personaje) VALUES (1, 1);
 INSERT INTO personajetienepoderes (codigo_poderes, codigo_personaje) VALUES (2, 1);
@@ -413,6 +425,24 @@ GROUP BY p.codigo
 HAVING COUNT(pa.codigo_arma) > 1;
 
 DELIMITER $$
+DROP FUNCTION IF EXISTS fn_numPersonajesArma;
+CREATE FUNCTION fn_numPersonajesArma(codArma INT)
+RETURNS INT
+READS SQL DATA
+BEGIN
+	DECLARE num_personajes INT DEFAULT -1;
+	IF EXISTS (SELECT * FROM personajetienearma WHERE personajetienearma.codigo_arma = codArma) THEN
+		SELECT COUNT(personajetienearma.codigo_personaje) INTO num_personajes FROM personajetienearma 
+		WHERE personajetienearma.codigo_arma = codArma;
+	END IF;
+    RETURN num_personajes;
+END $$
+DELIMITER ;
+
+SELECT fn_numPersonajesArma(4);
+SELECT fn_numPersonajesarma(14);
+
+DELIMITER $$
 DROP FUNCTION IF EXISTS fn_insertaSuceso $$
 CREATE FUNCTION fn_insertaSuceso (codLugarEmblematico INT, codPersonaje INT, nombreSuceso VARCHAR(50)) 
 RETURNS INT
@@ -441,3 +471,51 @@ JOIN personaje ON personaje.codigo = sucesos.codigo_personaje;
 SELECT fn_insertaSuceso (1, 1, 'Muerte de dragón');
 SELECT * FROM sucesos JOIN lugaresemblematicos ON lugaresemblematicos.codigo = sucesos.codigo_lugaresemblematicos
 JOIN personaje ON personaje.codigo = sucesos.codigo_personaje;
+
+/*procedimiento*/
+DROP PROCEDURE IF EXISTS sp_armasPersonajes;
+DELIMITER $$
+CREATE PROCEDURE sp_armasPersonajes()
+BEGIN
+	DECLARE fin INT DEFAULT FALSE;
+	DECLARE nomArma VARCHAR(50);
+	DECLARE numPersonajes INT;
+	DECLARE numPersonaje INT;
+	DECLARE nomPersonaje VARCHAR(50);
+	DECLARE cur1 CURSOR FOR SELECT nombre, fn_numPersonajesArma(codigo) FROM arma;
+	DECLARE cur2 CURSOR FOR SELECT p.nombre
+								FROM personaje p
+								JOIN personajetienearma pa ON p.codigo = pa.codigo_personaje
+								JOIN arma a ON a.codigo = pa.codigo_arma
+								WHERE a.nombre = @idarma;
+	DECLARE CONTINUE HANDLER FOR NOT FOUND SET fin = TRUE;
+	
+    OPEN cur1;
+    
+    FETCH cur1 INTO nomArma, numPersonajes;
+    
+    WHILE (NOT fin) DO
+			SELECT CONCAT('Arma: ', nomArma, ' - Personajes que lo usan: ', numPersonajes)  AS 'Número de personajes que usan el arma';
+            
+            OPEN cur2;
+            
+            FETCH cur2 INTO nomPersonaje;
+            
+			WHILE (NOT fin) DO
+				IF numPersonajes = 0 THEN
+					SELECT 'No utilizada';
+				ELSE
+					SET fin = FALSE;
+					SET @idArma = LAST_INSERT_ID();
+					SELECT CONCAT('Personaje Nº: ', numPersonaje, ' Nombre: ', nomPersonaje);
+				END IF;
+                FETCH cur2 INTO nomPersonaje;
+            END WHILE;
+            CLOSE cur2;
+            FETCH cur1 INTO nomArma, numPersonajes;
+	END WHILE;
+    CLOSE cur1;
+END $$
+DELIMITER ;
+
+CALL sp_armasPersonajes();
