@@ -303,16 +303,16 @@ INSERT INTO poderes (nombre) VALUES ('Controlar el Clima');
 
 
 /*lugaresEmblematicos*/
-INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Torre de la Alegría', 'Torre fortificada situada en la localidad de Alegria-Dulantzi', 4, 1);
-INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('El Jardín de las Hespérides', 'Jardín mítico situado en el municipio de Amurrio', 6, 2);
-INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Cueva del Dragón', 'Cueva situada en el municipio de Anana, en la que se dice que vivía un dragón', 10, 3);
-INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('El Bosque de los Cuervos', 'Bosque situado en el municipio de Aramaio, conocido por la cantidad de cuervos que lo habitan', 12, 4);
-INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('El Castillo de la Serpiente', 'Castillo situado en la localidad de Arminon', 16, 5);
-INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('El Santuario de las Mariposas', 'Santuario situado en el municipio de Arraia-Maeztu, donde habitan miles de mariposas', 18, 6);
-INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('El Valle de los Olivos', 'Valle situado en el municipio de Arratzua-Ubarrundia, conocido por sus olivos', 22, 7);
-INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Montaña del Rey', 'Montaña situada en la localidad de Artziniega, donde se dice que se encuentra el trono del rey', 24, 8);
-INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Torre de la Luna', 'Torre situada en la localidad de Asparrena, conocida por su forma de media luna', 28, 9);
-INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Cascada del Dragón', 'Cascada situada en el municipio de Ayala/Aiara, donde se dice que aparece un dragón cada luna llena', 30, 10);
+INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Torre de la Alegría', 'Torre fortificada situada en la localidad de Alegria-Dulantzi', 7674, 1);
+INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('El Jardín de las Hespérides', 'Jardín mítico situado en el municipio de Amurrio', 2092, 2);
+INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Cueva del Dragón', 'Cueva situada en el municipio de Anana, en la que se dice que vivía un dragón', 16738, 3);
+INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('El Bosque de los Cuervos', 'Bosque situado en el municipio de Aramaio, conocido por la cantidad de cuervos que lo habitan', 24202, 4);
+INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('El Castillo de la Serpiente', 'Castillo situado en la localidad de Arminon', 24406, 5);
+INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('El Santuario de las Mariposas', 'Santuario situado en el municipio de Arraia-Maeztu, donde habitan miles de mariposas', 3496, 6);
+INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('El Valle de los Olivos', 'Valle situado en el municipio de Arratzua-Ubarrundia, conocido por sus olivos', 4672, 7);
+INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Montaña del Rey', 'Montaña situada en la localidad de Artziniega, donde se dice que se encuentra el trono del rey', 496, 8);
+INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Torre de la Luna', 'Torre situada en la localidad de Asparrena, conocida por su forma de media luna', 7572, 9);
+INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Cascada del Dragón', 'Cascada situada en el municipio de Ayala/Aiara, donde se dice que aparece un dragón cada luna llena', 12094, 10);
 /*sucesos*/ 
 INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Boda Roja', 1, 3);
 INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Muerte de Joffrey Baratheon', 2, 5);
@@ -470,17 +470,9 @@ WHERE c.territorio NOT IN (
 GROUP BY c.codigo;
 
 
-
-
-
-
-
-
-
-
 /*Función 1*/
-DELIMITER $$
 DROP FUNCTION IF EXISTS fn_numPersonajesArma;
+DELIMITER $$
 CREATE FUNCTION fn_numPersonajesArma(codArma INT)
 RETURNS INT
 READS SQL DATA
@@ -502,8 +494,8 @@ SELECT fn_numPersonajesarma(14);
 
 
 /*Función 2*/
+DROP FUNCTION IF EXISTS fn_insertaSuceso;
 DELIMITER $$
-DROP FUNCTION IF EXISTS fn_insertaSuceso $$
 CREATE FUNCTION fn_insertaSuceso (codLugarEmblematico INT, codPersonaje INT, nombreSuceso VARCHAR(50)) 
 RETURNS INT
 READS SQL DATA
@@ -538,48 +530,46 @@ DROP PROCEDURE IF EXISTS sp_armasPersonajes;
 DELIMITER $$
 CREATE PROCEDURE sp_armasPersonajes()
 BEGIN
+	DECLARE msg VARCHAR(16000) DEFAULT '';
 	DECLARE fin INT DEFAULT FALSE;
 	DECLARE nomArma VARCHAR(50);
-	DECLARE numPersonajes INT;
-	DECLARE numPersonaje INT;
+	DECLARE numPersonajes INT DEFAULT 0;
+    DECLARE idarma INT DEFAULT 0;
 	DECLARE nomPersonaje VARCHAR(50);
-	DECLARE cur1 CURSOR FOR SELECT nombre, fn_numPersonajesArma(codigo) FROM arma;
-	DECLARE cur2 CURSOR FOR SELECT p.nombre
-								FROM personaje p
-								JOIN personajetienearma pa ON p.codigo = pa.codigo_personaje
-								JOIN arma a ON a.codigo = pa.codigo_arma
-								WHERE a.nombre = @idarma;
+    DECLARE codPersonaje INT DEFAULT 0;
+	DECLARE cur1 CURSOR FOR SELECT nombre, fn_numPersonajesArma(arma.codigo), codigo FROM arma;
+	DECLARE cur2 CURSOR FOR SELECT personaje.nombre, personaje.codigo FROM personaje
+							JOIN personajetienearma ON personaje.codigo = personajetienearma.codigo_personaje
+							WHERE personajetienearma.codigo_arma = idarma;
 	DECLARE CONTINUE HANDLER FOR NOT FOUND SET fin = TRUE;
 	
     OPEN cur1;
-    
-    FETCH cur1 INTO nomArma, numPersonajes;
-    
-    WHILE (NOT fin) DO
-			SELECT CONCAT('Arma: ', nomArma, ' - Personajes que lo usan: ', numPersonajes)  AS 'Número de personajes que usan el arma';
-            
-            OPEN cur2;
-            
-            FETCH cur2 INTO nomPersonaje;
-            
+
+	FETCH cur1 INTO nomArma, numPersonajes, idarma;
+
+	WHILE (NOT fin) DO
+		IF (numPersonajes = -1) THEN
+			SELECT CONCAT(msg, '\nArma: ', nomArma, ' - No utilizada')  INTO msg;
+		ELSE
+			SELECT CONCAT(msg, '\nArma: ', nomArma, ' - Personajes que lo usan: ', numPersonajes)  INTO msg;
+			OPEN cur2;
+			FETCH cur2 INTO nomPersonaje, codPersonaje;
+
 			WHILE (NOT fin) DO
-				IF numPersonajes = 0 THEN
-					SELECT 'No utilizada';
-				ELSE
-					SET fin = FALSE;
-					SET @idArma = LAST_INSERT_ID();
-					SELECT CONCAT('Personaje Nº: ', numPersonaje, ' Nombre: ', nomPersonaje);
-				END IF;
-                FETCH cur2 INTO nomPersonaje;
-            END WHILE;
-            CLOSE cur2;
-            FETCH cur1 INTO nomArma, numPersonajes;
+				SET msg = CONCAT(msg, '\n\tPersonaje Nº: ', codPersonaje, ' Nombre: ', nomPersonaje);
+				FETCH cur2 INTO nomPersonaje, codPersonaje;
+			END WHILE;
+
+			CLOSE cur2;
+		END IF;
+
+		SET fin = FALSE;
+		FETCH cur1 INTO nomArma, numPersonajes, idarma;
 	END WHILE;
-    CLOSE cur1;
+
+	CLOSE cur1;
+	SELECT msg;
 END $$
 DELIMITER ;
 
 CALL sp_armasPersonajes();
-
-
-
