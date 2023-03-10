@@ -125,6 +125,16 @@ CREATE TABLE sucesos (
     FOREIGN KEY (codigo_personaje) REFERENCES personaje(codigo)
 );
 
+DROP TABLE IF EXISTS tiene;
+CREATE TABLE tiene (
+    codigo_dragon INT NOT NULL,
+    codigo_casa INT NOT NULL,
+    PRIMARY KEY (codigo_dragon, codigo_casa),
+    FOREIGN KEY (codigo_dragon) REFERENCES dragon(codigo),
+    FOREIGN KEY (codigo_casa) REFERENCES casa(codigo)
+);
+
+
 DROP TABLE IF EXISTS personajetienearma;
 CREATE TABLE personajetienearma (
     codigo_arma INT,
@@ -315,6 +325,18 @@ INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUE
 INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Toma de Harrenhal por la Hermandad sin Estandartes', 8, 7);
 INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Muerte de Khal Drogo', 9, 10);
 
+/*Tiene(dragon-casa)*/
+INSERT INTO tiene (codigo_dragon, codigo_casa) VALUES (1, 3);
+INSERT INTO tiene (codigo_dragon, codigo_casa) VALUES (2, 3);
+INSERT INTO tiene (codigo_dragon, codigo_casa) VALUES (3, 3);
+INSERT INTO tiene (codigo_dragon, codigo_casa) VALUES (4, 2);
+INSERT INTO tiene (codigo_dragon, codigo_casa) VALUES (5, 2);
+INSERT INTO tiene (codigo_dragon, codigo_casa) VALUES (6, 2);
+INSERT INTO tiene (codigo_dragon, codigo_casa) VALUES (7, 3);
+INSERT INTO tiene (codigo_dragon, codigo_casa) VALUES (8, 3);
+INSERT INTO tiene (codigo_dragon, codigo_casa) VALUES (9, 4);
+INSERT INTO tiene (codigo_dragon, codigo_casa) VALUES (10, 5);
+
 /*personajetienepoderes*/
 INSERT INTO personajetienearma (codigo_arma, codigo_personaje) VALUES (1, 4);
 INSERT INTO personajetienearma (codigo_arma, codigo_personaje) VALUES (2, 6);
@@ -417,12 +439,44 @@ GROUP BY p.codigo
 ORDER BY apariciones_totales DESC;
 
 
-SELECT UPPER(p.nombre) AS 'Personaje', COUNT(pa.codigo_arma) AS 'Nº Armas'
+SELECT UPPER(p.nombre) AS "Personaje", COUNT(pta.codigo_arma) AS "Nº Armas"
 FROM personaje p
-JOIN personajetienearma pa ON p.codigo = pa.codigo_personaje
-WHERE p.fechaMuerte IS NOT NULL AND TIMESTAMPDIFF(YEAR, p.fechaNacimiento, p.fechaMuerte) > 30
+JOIN personajetienearma pta ON p.codigo = pta.codigo_personaje
+WHERE (YEAR(p.fechaMuerte) - YEAR(p.fechaNacimiento) > 30) OR (p.fechaMuerte IS NULL AND YEAR(NOW()) - YEAR(p.fechaNacimiento) > 30)
 GROUP BY p.codigo
-HAVING COUNT(pa.codigo_arma) > 1;
+HAVING COUNT(pta.codigo_arma) > 1;
+
+
+SELECT c.nombre AS "CCAA", COUNT(DISTINCT l.codigo) AS "Nº Lugares emblemáticos", COUNT(DISTINCT s.codigo) AS "Nº Sucesos"
+FROM comunidad c
+LEFT JOIN provincia p ON c.codigo = p.codigo_comunidad
+LEFT JOIN municipio m ON p.codigo = m.codigo_provincia
+LEFT JOIN lugaresemblematicos l ON m.codigo = l.codigo_municipio
+LEFT JOIN sucesos s ON l.codigo = s.codigo_lugaresemblematicos
+GROUP BY c.nombre
+ORDER BY c.nombre ASC;
+
+
+
+SELECT c.nombre AS "Casa sin sucesos", AVG(d.tamaño) AS "Media tamaño dragones", MIN(d.longitud) AS "Longitud mínima de sus alas"
+FROM casa c
+LEFT JOIN tiene t ON c.codigo = t.codigo_casa
+LEFT JOIN dragon d ON t.codigo_dragon = d.codigo
+WHERE c.territorio NOT IN (
+    SELECT le.codigo_municipio
+    FROM sucesos s
+    JOIN lugaresemblematicos le ON s.codigo_lugaresemblematicos = le.codigo
+)
+GROUP BY c.codigo;
+
+
+
+
+
+
+
+
+
 
 /*Función 1*/
 DELIMITER $$
@@ -442,6 +496,10 @@ DELIMITER ;
 
 SELECT fn_numPersonajesArma(4);
 SELECT fn_numPersonajesarma(14);
+
+
+
+
 
 /*Función 2*/
 DELIMITER $$
@@ -473,6 +531,7 @@ JOIN personaje ON personaje.codigo = sucesos.codigo_personaje;
 SELECT fn_insertaSuceso (1, 1, 'Muerte de dragón');
 SELECT * FROM sucesos JOIN lugaresemblematicos ON lugaresemblematicos.codigo = sucesos.codigo_lugaresemblematicos
 JOIN personaje ON personaje.codigo = sucesos.codigo_personaje;
+
 
 /*procedimiento*/
 DROP PROCEDURE IF EXISTS sp_armasPersonajes;
@@ -521,3 +580,6 @@ END $$
 DELIMITER ;
 
 CALL sp_armasPersonajes();
+
+
+
