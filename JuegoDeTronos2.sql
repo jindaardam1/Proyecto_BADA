@@ -300,8 +300,6 @@ INSERT INTO poderes (nombre) VALUES ('Resucitación');
 INSERT INTO poderes (nombre) VALUES ('Piel Cambiante');
 INSERT INTO poderes (nombre) VALUES ('Controlar el Clima');
 
-
-
 /*lugaresEmblematicos*/
 INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Torre de la Alegría', 'Torre fortificada situada en la localidad de Alegria-Dulantzi', 7674, 1);
 INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('El Jardín de las Hespérides', 'Jardín mítico situado en el municipio de Amurrio', 2092, 2);
@@ -313,6 +311,7 @@ INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_c
 INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Montaña del Rey', 'Montaña situada en la localidad de Artziniega, donde se dice que se encuentra el trono del rey', 496, 8);
 INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Torre de la Luna', 'Torre situada en la localidad de Asparrena, conocida por su forma de media luna', 7572, 9);
 INSERT INTO lugaresemblematicos (nombre, descripcion, codigo_municipio, codigo_casa) VALUES ('La Cascada del Dragón', 'Cascada situada en el municipio de Ayala/Aiara, donde se dice que aparece un dragón cada luna llena', 12094, 10);
+
 /*sucesos*/ 
 INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Boda Roja', 1, 3);
 INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES ('Muerte de Joffrey Baratheon', 2, 5);
