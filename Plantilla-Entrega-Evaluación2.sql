@@ -495,9 +495,60 @@ Notas:
 - Todos los procedimientos, funciones, triggers, etc. deberán contar con sentencias (CALL, etc.) que permitan comprobar su funcionamiento.*/
 
 -- Crea un procedimiento y pruébalo...
-DROP PROCEDURE IF EXISTS ...
-CREATE PROCEDURE...
-CALL ...
+/*Función 1*/
+DELIMITER $$
+DROP FUNCTION IF EXISTS fn_numPersonajesArma;
+CREATE FUNCTION fn_numPersonajesArma(codArma INT)
+RETURNS INT
+READS SQL DATA
+BEGIN
+	DECLARE num_personajes INT DEFAULT -1;
+	IF EXISTS (SELECT * FROM personajetienearma WHERE personajetienearma.codigo_arma = codArma) THEN
+		SELECT COUNT(personajetienearma.codigo_personaje) INTO num_personajes FROM personajetienearma 
+		WHERE personajetienearma.codigo_arma = codArma;
+	END IF;
+    RETURN num_personajes;
+END $$
+DELIMITER ;
+
+SELECT fn_numPersonajesArma(4);
+SELECT fn_numPersonajesarma(14);
+
+
+
+
+
+/*Función 2*/
+DELIMITER $$
+DROP FUNCTION IF EXISTS fn_insertaSuceso $$
+CREATE FUNCTION fn_insertaSuceso (codLugarEmblematico INT, codPersonaje INT, nombreSuceso VARCHAR(50)) 
+RETURNS INT
+READS SQL DATA
+BEGIN
+     /*La condición del enunciado "Código del suceso: el máximo existente más 1." ya la cumple 
+     nuestra tabla al ser AUTO_INCREMENT*/
+     IF NOT EXISTS (SELECT * FROM lugaresemblematicos WHERE codigo = codLugarEmblematico) THEN
+        RETURN -3;
+     ELSEIF NOT EXISTS (SELECT * FROM personaje WHERE codigo = codPersonaje) THEN
+        RETURN -2;
+     ELSEIF CHAR_LENGTH(nombreSuceso) < 3 THEN
+        RETURN -1;
+     ELSE
+        INSERT INTO sucesos (nombre, codigo_lugaresemblematicos, codigo_personaje) VALUES (nombreSuceso, codLugarEmblematico, codPersonaje);
+        RETURN 0;
+     END IF;
+END $$
+DELIMITER ;
+
+SELECT fn_insertaSuceso (23748, 1, 'Muerte de dragón');
+SELECT fn_insertaSuceso (1, 23748, 'Muerte de dragón');
+SELECT fn_insertaSuceso (1, 1, 'M');
+SELECT * FROM sucesos JOIN lugaresemblematicos ON lugaresemblematicos.codigo = sucesos.codigo_lugaresemblematicos
+JOIN personaje ON personaje.codigo = sucesos.codigo_personaje;
+SELECT fn_insertaSuceso (1, 1, 'Muerte de dragón');
+SELECT * FROM sucesos JOIN lugaresemblematicos ON lugaresemblematicos.codigo = sucesos.codigo_lugaresemblematicos
+JOIN personaje ON personaje.codigo = sucesos.codigo_personaje;
+
 -- Crea una función y pruébala...
 DROP FUNCTION IF EXISTS ...
 CREATE FUNCTION ...
